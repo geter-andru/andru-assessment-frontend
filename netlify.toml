@@ -1,0 +1,92 @@
+# Netlify Configuration for H&S Assessment Platform
+# Next.js 15 deployment configuration with Netlify Adapter
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+  # These will be overridden by Netlify environment variables in the dashboard
+  # Listed here for documentation purposes
+  NEXT_PUBLIC_AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY"
+  NEXT_PUBLIC_AIRTABLE_BASE_ID = "app0jJkgTCqn46vp9"
+  NEXT_PUBLIC_MAKE_WEBHOOK_URL = "YOUR_MAKE_WEBHOOK_URL"
+
+# Essential plugin for Next.js on Netlify
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# API Routes handler
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Dynamic routes handler for Next.js
+[[redirects]]
+  from = "/_next/static/*"
+  to = "/static/:splat"
+  status = 200
+
+# Image optimization
+[[redirects]]
+  from = "/_next/image"
+  to = "/.netlify/images"
+  status = 200
+  query = { q = ":quality", w = ":width" }
+
+# Default SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+  conditions = { Role = ["admin", "user"] }
+
+# Public redirect for non-authenticated
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache control for static assets
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.airtable.com https://hook.us1.make.com https://api.stripe.com;"
+
+# Function configuration
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["public/**", ".next/**"]

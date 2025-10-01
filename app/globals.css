@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./assessment.css";
+
+/* Override Tailwind defaults with our professional dark theme */
+body {
+  background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
