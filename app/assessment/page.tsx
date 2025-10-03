@@ -8,7 +8,7 @@ import { detectIndustry } from '@/lib/industry-data';
 import SmartInsights from '@/components/SmartInsights';
 import UserInfoForm from '@/components/UserInfoForm';
 import ProductInputForm from '@/components/ProductInputForm';
-import { submitAssessment } from '../lib/api';
+import { submitAssessment } from '@/lib/api';
 import AnswerExplanation from '@/components/AnswerExplanation';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import EnvironmentalBackground from '@/components/EnvironmentalBackground';

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { getWelcomeData } from '../lib/api';
+import { getWelcomeData } from '@/lib/api';
 
 interface WelcomeData {
   sessionId: string;
