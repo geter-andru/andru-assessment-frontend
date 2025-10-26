@@ -55,11 +55,11 @@ export default function Home() {
           
           <button
             onClick={async () => {
-              // Generate 7-digit alphanumeric session ID
+              // Generate 12-character alphanumeric session ID
               const generateSessionId = () => {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                 let result = '';
-                for (let i = 0; i < 7; i++) {
+                for (let i = 0; i < 12; i++) {
                   result += chars.charAt(Math.floor(Math.random() * chars.length));
                 }
                 return result;

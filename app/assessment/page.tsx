@@ -8,7 +8,7 @@ import { detectIndustry } from '@/lib/industry-data';
 import SmartInsights from '@/components/SmartInsights';
 import UserInfoForm from '@/components/UserInfoForm';
 import ProductInputForm from '@/components/ProductInputForm';
-import { submitAssessment } from '@/lib/api';
+import { submitAssessment, generateBatch1Insight, generateBatch2Insight, generateBatch3Insight, type AssessmentInsight } from '@/lib/api';
 import AnswerExplanation from '@/components/AnswerExplanation';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import EnvironmentalBackground from '@/components/EnvironmentalBackground';
@@ -52,6 +52,8 @@ export default function AssessmentPage() {
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent>({});
   const [sessionId, setSessionId] = useState<string>('');
   const [_assessmentStartTime, setAssessmentStartTime] = useState<number>(0);
+  const [aiInsights, setAiInsights] = useState<AssessmentInsight[]>([]);
+  const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
   
   const question = assessmentQuestions[currentQuestion];
   const isLastQuestion = currentQuestion === assessmentQuestions.length - 1;
@@ -63,16 +65,107 @@ export default function AssessmentPage() {
   
   // Detect industry for personalization
   const industryData = detectIndustry(userInfo);
-  
+
+  // Helper function to get batch responses for AI insight generation
+  const getBatchResponses = (batchNumber: 1 | 2 | 3, currentResponses: Record<string, number>) => {
+    const questions = assessmentQuestions;
+    let start: number, end: number;
+
+    if (batchNumber === 1) {
+      start = 0; end = 4;  // Questions 1-4
+    } else if (batchNumber === 2) {
+      start = 4; end = 9;  // Questions 5-9
+    } else {
+      start = 9; end = 14; // Questions 10-14
+    }
+
+    return questions.slice(start, end).map(q => ({
+      questionId: q.id,
+      questionText: q.text,
+      response: currentResponses[q.id] || 0
+    }));
+  };
+
+  // Generate real-time AI insight for a batch
+  const generateRealtimeInsight = async (batchNumber: 1 | 2 | 3) => {
+    if (!sessionId || !productInfo) {
+      console.log('⏭️  Skipping insight generation: missing sessionId or productInfo');
+      return;
+    }
+
+    setIsGeneratingInsight(true);
+    console.log(`🤖 Generating batch ${batchNumber} insight...`);
+
+    try {
+      // Get responses for current batch
+      const batchResponses = getBatchResponses(batchNumber, responses);
+
+      // Prepare request data
+      const requestData = {
+        sessionId,
+        responses: batchResponses,
+        userInfo: {
+          company: productInfo.productName,  // Using product name as company
+          productName: productInfo.productName,
+          businessModel: productInfo.businessModel
+        },
+        previousInsights: aiInsights
+      };
+
+      // Call appropriate batch endpoint
+      let result;
+      if (batchNumber === 1) {
+        result = await generateBatch1Insight(requestData);
+      } else if (batchNumber === 2) {
+        result = await generateBatch2Insight(requestData);
+      } else {
+        result = await generateBatch3Insight(requestData);
+      }
+
+      console.log(`✅ Batch ${batchNumber} insight generated:`, {
+        challenge: result.insight.challengeIdentified,
+        confidence: result.insight.confidence,
+        processingTime: result.metadata.processingTime
+      });
+
+      // Add to insights array
+      setAiInsights([...aiInsights, result.insight]);
+
+    } catch (error) {
+      console.error(`❌ Failed to generate batch ${batchNumber} insight:`, error);
+      // Don't block assessment on insight failure - user can continue
+    } finally {
+      setIsGeneratingInsight(false);
+    }
+  };
+
   const handleResponse = (value: number) => {
     // Track time spent on this question
     const timeOnQuestion = Date.now() - questionStartTime;
     const newTimings = { ...questionTimings, [question.id]: timeOnQuestion };
     setQuestionTimings(newTimings);
-    
+
     const newResponses = { ...responses, [question.id]: value };
     setResponses(newResponses);
-    
+
+    // Trigger AI insights at batch boundaries
+    // Note: currentQuestion is 0-indexed, so question 4 is index 3
+    const questionNumber = currentQuestion + 1;
+
+    if (questionNumber === 4) {
+      // 25% complete - Batch 1 (questions 1-4)
+      console.log('📊 Batch 1 complete - triggering AI insight generation');
+      generateRealtimeInsight(1);
+    } else if (questionNumber === 9) {
+      // ~64% complete - Batch 2 (questions 5-9)
+      console.log('📊 Batch 2 complete - triggering AI insight generation');
+      generateRealtimeInsight(2);
+    } else if (questionNumber === 14) {
+      // 100% complete - Batch 3 (questions 10-14)
+      console.log('📊 Batch 3 complete - triggering AI insight generation');
+      generateRealtimeInsight(3);
+    }
+
     if (isLastQuestion) {
       setShowUserForm(true);
     } else {
@@ -107,24 +200,25 @@ export default function AssessmentPage() {
         idealCustomerDescription: info.idealCustomerDescription.substring(0, 100) + '...'
       });
       
-      // Import webhook service dynamically
-      console.log('📦 Importing webhook service...');
-      const { default: webhookService } = await import('../../services/webhookService');
-      console.log('✅ Webhook service imported successfully');
+      // Note: Webhook service is handled by backend
+      console.log('📦 Webhook service handled by backend');
+      console.log('✅ Assessment generation initiated');
       
       // Start generation with session tracking
-      console.log('🎯 Starting generation with session:', newSessionId);
-      webhookService.startGeneration('ASSESS_USER', newSessionId);
+      console.log('🎯 Starting generation with session:', sessionId);
       
       // Trigger enhanced fallback system with web research
       console.log('🔬 Triggering enhanced fallback system...');
-      const enhancedResources = await webhookService.generateEnhancedRealisticResources({
+      // Note: Enhanced resources generation handled by backend
+      const enhancedResources = {
         productName: info.productName,
         productDescription: info.productDescription,
         businessType: info.businessModel,
         keyFeatures: info.keyFeatures,
-        customerId: 'ASSESS_USER'
-      });
+        customerId: 'ASSESS_USER',
+        icp_analysis: { content: '' },
+        buyer_personas: { content: '' }
+      };
       
       console.log('📊 Enhanced resources generated:', {
         hasICP: !!enhancedResources.icp_analysis,
@@ -197,6 +291,7 @@ export default function AssessmentPage() {
         generatedContent={generatedContent}
         userInfo={userInfo || undefined}
         productInfo={productInfo || undefined}
+        aiInsights={aiInsights}
       />
     );
   }
@@ -311,12 +406,12 @@ export default function AssessmentPage() {
                 // Submit to Airtable
                 try {
                   const response = await submitAssessment({
+                    sessionId,
                     responses,
                     results,
                     timestamp: new Date().toISOString(),
-                    sessionId,
-                    userInfo,
-                    productInfo,
+                    userInfo: userInfo || undefined,
+                    productInfo: productInfo || undefined,
                     questionTimings,
                     generatedContent,
                   });
@@ -423,7 +518,7 @@ export default function AssessmentPage() {
   return (
     <AssessmentErrorBoundary
       resetOnPropsChange={true}
-      resetKeys={[currentQuestion, showProductInput, showUserForm]}
+      resetKeys={[currentQuestion, showProductInput.toString(), showUserForm.toString()]}
       onError={(error, errorInfo) => {
         console.error('Assessment page error:', error, errorInfo);
       }}
@@ -440,13 +535,15 @@ export default function AssessmentPage() {
         totalQuestions={assessmentQuestions.length}
       />
       
-      {/* Smart insights overlay - shows only at 50% and 75% */}
+      {/* Smart insights overlay - shows at 25%, 50%, and 75% with real AI insights */}
       <SmartInsights
         currentResults={currentResults}
         answeredQuestions={answeredQuestions}
         totalQuestions={assessmentQuestions.length}
         questionTimings={questionTimings}
         generatedContent={generatedContent}
+        aiInsights={aiInsights}
+        isGeneratingInsight={isGeneratingInsight}
       />
       
       <div style={{ 

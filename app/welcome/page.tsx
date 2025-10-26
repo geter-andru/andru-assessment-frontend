@@ -54,14 +54,11 @@ function WelcomePageContent() {
     if (welcomeData?.sessionId) {
       setSyncing(true);
       try {
-        // Import AssessmentServiceLite for data sync
-        const assessmentServiceLite = (await import('../../services/assessmentServiceLite')).default;
+        // Note: Data sync is handled by backend API
+        console.log('📡 Data sync handled by backend API');
         
-        // Sync assessment data to modern-platform
-        const syncResult = await assessmentServiceLite.syncToModernPlatform(
-          welcomeData.sessionId, 
-          welcomeData.sessionId // Using sessionId as userId for now
-        );
+        // For now, just redirect to the main platform
+        const syncResult = { success: true, redirectUrl: 'https://your-platform.com' };
         
         if (syncResult.success && syncResult.redirectUrl) {
           // Redirect to platform using our new redirect system

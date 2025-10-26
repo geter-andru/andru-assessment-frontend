@@ -77,6 +77,46 @@ export interface HealthResponse {
   environment: string;
 }
 
+// Real-time Insight Interfaces
+export interface AssessmentInsight {
+  id: string;
+  sessionId: string;
+  batchNumber: 1 | 2 | 3;
+  questionRange: string;
+  insight: string;
+  challengeIdentified: string;
+  businessImpact: string;
+  confidence: number;
+  generatedAt: string;
+}
+
+export interface InsightRequest {
+  sessionId: string;
+  responses: Array<{
+    questionId: string;
+    questionText: string;
+    response: number;
+  }>;
+  userInfo?: {
+    company: string;
+    productName: string;
+    businessModel: string;
+  };
+  previousInsights?: AssessmentInsight[];
+}
+
+export interface InsightResponse {
+  success: boolean;
+  insight: AssessmentInsight;
+  metadata: {
+    batchNumber: number;
+    questionRange: string;
+    generatedAt: string;
+    processingTime: number;
+    contextualContinuity?: boolean;
+  };
+}
+
 class ApiService {
   private baseUrl: string;
 
@@ -131,6 +171,32 @@ class ApiService {
   async getHealth(): Promise<HealthResponse> {
     return this.request<HealthResponse>('/api/health');
   }
+
+  // Real-time Insight API methods
+  async generateBatch1Insight(data: InsightRequest): Promise<InsightResponse> {
+    return this.request<InsightResponse>('/api/insights/batch1', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateBatch2Insight(data: InsightRequest): Promise<InsightResponse> {
+    return this.request<InsightResponse>('/api/insights/batch2', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateBatch3Insight(data: InsightRequest): Promise<InsightResponse> {
+    return this.request<InsightResponse>('/api/insights/batch3', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSessionInsights(sessionId: string): Promise<{ success: boolean; insights: AssessmentInsight[]; count: number }> {
+    return this.request<{ success: boolean; insights: AssessmentInsight[]; count: number }>(`/api/insights/session/${sessionId}`);
+  }
 }
 
 // Export singleton instance
@@ -146,5 +212,17 @@ export const submitAssessment = (data: AssessmentSubmitRequest) =>
 export const getWelcomeData = (sessionId: string) => 
   apiService.getWelcomeData(sessionId);
 
-export const getHealth = () => 
+export const getHealth = () =>
   apiService.getHealth();
+
+export const generateBatch1Insight = (data: InsightRequest) =>
+  apiService.generateBatch1Insight(data);
+
+export const generateBatch2Insight = (data: InsightRequest) =>
+  apiService.generateBatch2Insight(data);
+
+export const generateBatch3Insight = (data: InsightRequest) =>
+  apiService.generateBatch3Insight(data);
+
+export const getSessionInsights = (sessionId: string) =>
+  apiService.getSessionInsights(sessionId);

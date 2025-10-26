@@ -26,13 +26,12 @@ export const ExportEngineService = {
   generateLinkedInPost: (results: AssessmentResults) => {
     const { overallScore, buyerScore, techScore } = results;
     const level = ExportEngineService.getProfessionalLevel(overallScore);
-    const percentile = Math.min(Math.round(overallScore * 1.2), 99);
-    
+
     return `🎯 Revenue Readiness Assessment Results
 
 📊 Overall: ${overallScore}% | Customer: ${buyerScore}% | Value: ${Math.round((buyerScore + techScore) / 2)}% | Sales: ${techScore}%
 
-Level: ${level} (Top ${100 - percentile}% of technical founders)
+Level: ${level}
 
 #RevenueReadiness #TechnicalFounders #StartupGrowth`;
   },

@@ -8,11 +8,12 @@ import EnterpriseScoreChart from './EnterpriseScoreChart';
 import ModernCard from './ui/ModernCard';
 import { AssessmentErrorBoundary } from './ErrorBoundary';
 import { useAssessment } from '@/contexts/AssessmentContext';
-import { 
-  WidgetContainer, 
-  createWidget, 
-  type WidgetConfig 
+import {
+  WidgetContainer,
+  createWidget,
+  type WidgetConfig
 } from './widgets';
+import type { AssessmentInsight } from '@/lib/api';
 
 interface AssessmentResultsProps {
   results: {
@@ -42,6 +43,7 @@ interface AssessmentResultsProps {
     customerCount: string;
     distinguishingFeature: string;
   };
+  aiInsights?: AssessmentInsight[];
 }
 
 interface Challenge {
@@ -66,19 +68,19 @@ interface HiddenInsight {
   description: string;
 }
 
-export default function AssessmentResults({ results, questionTimings, generatedContent, userInfo, productInfo }: AssessmentResultsProps) {
+export default function AssessmentResults({ results, questionTimings, generatedContent, userInfo, productInfo, aiInsights }: AssessmentResultsProps) {
   const [activeSection, setActiveSection] = useState<'challenges' | 'recommendations'>('challenges');
   const [widgetLayout, setWidgetLayout] = useState<'grid' | 'tabs' | 'accordion'>('tabs');
-  
+
   // AssessmentContext integration
-  const { 
-    assessmentData, 
-    personalizedMessaging, 
-    setAssessmentResults, 
-    setUserInfo, 
-    setProductInfo, 
-    setGeneratedContent, 
-    setQuestionTimings 
+  const {
+    assessmentData,
+    personalizedMessaging,
+    setAssessmentResults,
+    setUserInfo,
+    setProductInfo,
+    setGeneratedContent,
+    setQuestionTimings
   } = useAssessment();
 
   // Widget configuration
@@ -153,12 +155,7 @@ export default function AssessmentResults({ results, questionTimings, generatedC
     if (score >= 50) return 'Foundation';
     return 'Beginning';
   };
-  
-  // Percentile calculation (mock - would be based on real data)
-  const getPercentile = (score: number): number => {
-    return Math.min(Math.round(score * 1.2), 99);
-  };
-  
+
   // Challenge analysis enhanced with ICP/TBP insights
   const generateChallenges = (): Challenge[] => {
     const challenges: Challenge[] = [];
@@ -522,6 +519,103 @@ export default function AssessmentResults({ results, questionTimings, generatedC
             {personalizedMessaging?.welcomeMessage?.secondary || 'Comprehensive analysis and strategic recommendations'}
           </p>
         </div>
+
+        {/* AI Insights Section */}
+        {aiInsights && aiInsights.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                🤖 AI-Powered Pattern Analysis
+              </h2>
+              <p className="text-gray-400">
+                Real-time insights generated during your assessment
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {aiInsights
+                .sort((a, b) => a.batchNumber - b.batchNumber)
+                .map((insight, index) => (
+                  <motion.div
+                    key={insight.batchNumber}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.15 }}
+                    className="relative"
+                  >
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 rounded-xl p-6 h-full hover:border-cyan-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
+                      {/* Batch indicator */}
+                      <div className="absolute -top-3 -left-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
+                        {insight.batchNumber}
+                      </div>
+
+                      {/* Confidence badge */}
+                      <div className="flex justify-end mb-3">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                          insight.confidence >= 85
+                            ? 'bg-green-900/30 text-green-400 border border-green-500/30'
+                            : insight.confidence >= 70
+                            ? 'bg-blue-900/30 text-blue-400 border border-blue-500/30'
+                            : 'bg-amber-900/30 text-amber-400 border border-amber-500/30'
+                        }`}>
+                          {insight.confidence}% confidence
+                        </span>
+                      </div>
+
+                      {/* Challenge identified */}
+                      <h3 className="text-lg font-semibold mb-3 text-white">
+                        {insight.challengeIdentified}
+                      </h3>
+
+                      {/* AI Insight */}
+                      <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                        {insight.insight}
+                      </p>
+
+                      {/* Business Impact */}
+                      <div className="mt-4 pt-4 border-t border-gray-700/50">
+                        <div className="flex items-start space-x-2">
+                          <span className="text-lg">💼</span>
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-400 uppercase font-semibold mb-1">
+                              Business Impact
+                            </p>
+                            <p className="text-sm text-gray-300">
+                              {insight.businessImpact}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress indicator */}
+                      <div className="mt-4 pt-3 border-t border-gray-700/30">
+                        <p className="text-xs text-gray-500">
+                          {insight.batchNumber === 1 && 'Detected at 25% completion'}
+                          {insight.batchNumber === 2 && 'Detected at 64% completion'}
+                          {insight.batchNumber === 3 && 'Detected at 100% completion'}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+            </div>
+
+            {/* Context continuity indicator */}
+            {aiInsights.length > 1 && (
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-500">
+                  <span className="inline-block mr-2">🔗</span>
+                  Each insight builds on previous patterns for progressive understanding
+                </p>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* Layout Controls */}
         <div className="flex justify-center mb-8">

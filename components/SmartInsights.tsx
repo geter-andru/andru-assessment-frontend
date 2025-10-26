@@ -3,6 +3,7 @@
 // Smart Insights - Pattern detection and insight generation (shows at 50% and 75% only)
 
 import { useCallback, useEffect, useState } from 'react';
+import type { AssessmentInsight } from '@/lib/api';
 
 interface SmartInsightsProps {
   currentResults: {
@@ -19,6 +20,8 @@ interface SmartInsightsProps {
     tbpGenerated?: string;
     buyerGap?: number;
   };
+  aiInsights?: AssessmentInsight[];
+  isGeneratingInsight?: boolean;
 }
 
 interface Insight {
@@ -33,29 +36,58 @@ export default function SmartInsights({
   answeredQuestions,
   totalQuestions,
   questionTimings,
-  generatedContent
+  generatedContent,
+  aiInsights,
+  isGeneratingInsight
 }: SmartInsightsProps) {
   const [currentInsight, setCurrentInsight] = useState<Insight | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasShown25, setHasShown25] = useState(false);
   const [hasShown50, setHasShown50] = useState(false);
   const [hasShown75, setHasShown75] = useState(false);
   const [lastProgressMilestone, setLastProgressMilestone] = useState(0);
   
   const progress = (answeredQuestions / totalQuestions) * 100;
   
-  // Generate insight based on patterns
+  // Generate insight based on patterns (now prioritizes real AI insights)
   const generateInsight = useCallback((): Insight | null => {
+    // Determine which insight milestone we're at
+    const currentMilestone = progress >= 75 ? 75 : progress >= 50 ? 50 : progress >= 25 ? 25 : 0;
+
+    // PRIORITY 1: Check if we have a real AI insight for this milestone
+    if (aiInsights && aiInsights.length > 0) {
+      const batchNumber = currentMilestone === 25 ? 1 : currentMilestone === 50 ? 2 : currentMilestone === 75 ? 3 : 0;
+      const aiInsight = aiInsights.find(insight => insight.batchNumber === batchNumber);
+
+      if (aiInsight) {
+        console.log(`🤖 Using real AI insight for batch ${batchNumber}:`, aiInsight.challengeIdentified);
+        // Use real AI insight - this is the PRIMARY path
+        return {
+          type: 'pattern',
+          title: aiInsight.challengeIdentified,
+          message: `${aiInsight.insight}\n\n💼 Business Impact: ${aiInsight.businessImpact}\n\n🎯 Confidence: ${aiInsight.confidence}%`,
+          severity: aiInsight.confidence >= 85 ? 'warning' : 'info'
+        };
+      }
+    }
+
+    // FALLBACK: Use pattern-based insights if AI is unavailable
+    console.log('📊 Falling back to pattern-based insights (AI insight not available)');
+
+    // At 25% milestone without AI: Return null (AI should always be available for batch 1)
+    if (currentMilestone === 25) {
+      console.log('⏳ Waiting for AI insight for batch 1...');
+      return null;
+    }
+
     // Analyze buyer vs tech scores
     const buyerTechGap = Math.abs(currentResults.buyerScore - currentResults.techScore);
-    
+
     // Analyze timing patterns
     const timings = Object.values(questionTimings);
     const avgTime = timings.length > 0 ? timings.reduce((a, b) => a + b, 0) / timings.length : 0;
     const slowQuestions = timings.filter(t => t > avgTime * 1.5).length;
-    
-    // Determine which insight milestone we're at
-    const currentMilestone = progress >= 75 ? 75 : progress >= 50 ? 50 : 0;
-    
+
     // At 50%: Show ICP/TBP-based insights if available
     if (currentMilestone === 50 && generatedContent?.icpGenerated) {
       // Extract key insights from generated ICP content
@@ -180,47 +212,14 @@ export default function SmartInsights({
         severity: 'info'
       };
     }
-    
-    // Pattern detection without revealing scores
-    const responsePatterns = Object.values(responses);
-    const consistentResponses = responsePatterns.filter(r => r >= 3).length;
-    const inconsistentResponses = responsePatterns.filter(r => r <= 2).length;
-    
-    if (currentMilestone === 50) {
-      if (consistentResponses > inconsistentResponses) {
-        return {
-          type: 'pattern',
-          title: 'Strong Foundation Detected',
-          message: 'Your responses show consistent confidence across revenue areas. This suggests solid fundamentals - the remaining questions will reveal advanced capabilities.',
-          severity: 'success'
-        };
-      } else {
-        return {
-          type: 'pattern',
-          title: 'Development Opportunities Emerging',
-          message: 'Your responses reveal specific areas for growth - exactly what we want to identify. The second half will pinpoint your strongest improvement opportunities.',
-          severity: 'info'
-        };
-      }
-    }
-    
-    // For 75% milestone
-    if (currentMilestone === 75) {
-      return {
-        type: 'progress',
-        title: 'Assessment Nearly Complete',
-        message: 'You\'re in the final stretch. These last questions cover advanced revenue execution that distinguishes top performers.',
-        severity: 'info'
-      };
-    }
-    
-    // Should not reach here - only show at 50% and 75%
+
+    // No other fallback insights - AI should always provide insights
     return null;
-  }, [currentResults, questionTimings, generatedContent, progress]);
+  }, [currentResults, questionTimings, generatedContent, progress, aiInsights]);
   
   useEffect(() => {
-    const currentMilestone = progress >= 75 ? 75 : progress >= 50 ? 50 : 0;
-    
+    const currentMilestone = progress >= 75 ? 75 : progress >= 50 ? 50 : progress >= 25 ? 25 : 0;
+
     // Only trigger if we've reached a new milestone
     if (currentMilestone > lastProgressMilestone && currentMilestone > 0) {
       const insight = generateInsight();
@@ -231,6 +230,7 @@ export default function SmartInsights({
         setLastProgressMilestone(currentMilestone);
         
         // Update milestone flags
+        if (currentMilestone === 25) setHasShown25(true);
         if (currentMilestone === 50) setHasShown50(true);
         if (currentMilestone === 75) setHasShown75(true);
         
@@ -243,7 +243,22 @@ export default function SmartInsights({
       }
     }
   }, [progress, currentResults, lastProgressMilestone, generateInsight]);
-  
+
+  // Show loading state while generating insights
+  if (isGeneratingInsight) {
+    return (
+      <div className="fixed top-4 right-4 max-w-xs p-4 rounded-lg shadow-xl z-50 bg-blue-900/90 border border-blue-500/30 text-blue-100">
+        <div className="flex items-center space-x-3">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Analyzing your responses with AI...</p>
+            <p className="text-xs opacity-75 mt-1">This may take a few seconds</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentInsight || !isVisible) return null;
   
   const getInsightStyles = () => {
@@ -282,7 +297,7 @@ export default function SmartInsights({
             {currentInsight.message}
           </p>
           <div className="mt-2 text-xs opacity-75">
-            Insight {hasShown75 ? '2 of 2' : '1 of 2'}
+            Insight {hasShown75 ? '3 of 3' : hasShown50 ? '2 of 3' : '1 of 3'}
           </div>
         </div>
         <button
