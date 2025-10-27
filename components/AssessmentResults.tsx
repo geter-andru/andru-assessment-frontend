@@ -14,6 +14,7 @@ import {
   type WidgetConfig
 } from './widgets';
 import type { AssessmentInsight } from '@/lib/api';
+import { trackEvent, trackConversion, getSessionId } from '@/lib/analytics';
 
 interface AssessmentResultsProps {
   results: {
@@ -97,6 +98,16 @@ export default function AssessmentResults({ results, questionTimings, generatedC
     if (productInfo) {
       setProductInfo(productInfo);
     }
+
+    // Track results page view
+    const analyticsSessionId = getSessionId();
+    trackEvent('results_viewed', {
+      sessionId: analyticsSessionId,
+      overallScore: results.overallScore,
+      buyerScore: results.buyerScore,
+      techScore: results.techScore,
+      qualification: results.qualification
+    });
     if (generatedContent) {
       setGeneratedContent(generatedContent);
     }
@@ -427,6 +438,13 @@ export default function AssessmentResults({ results, questionTimings, generatedC
     const encodedText = encodeURIComponent(text);
     const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?text=${encodedText}`;
     window.open(linkedInUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes');
+
+    // Track LinkedIn share
+    const analyticsSessionId = getSessionId();
+    trackConversion('linkedin_share', analyticsSessionId, {
+      overallScore: results.overallScore,
+      qualification: results.qualification
+    });
   };
 
   const handlePDFDownload = async () => {
@@ -670,17 +688,58 @@ export default function AssessmentResults({ results, questionTimings, generatedC
               <p className="text-gray-300 mb-6">
                 Access your complete revenue readiness dashboard, personalized insights, and sharing tools in the platform.
               </p>
-              <button 
-                onClick={() => {
-                  sessionStorage.setItem('assessmentResults', JSON.stringify({
-                    results,
-                    questionTimings,
-                    generatedContent,
-                    userInfo,
-                    productInfo,
-                    timestamp: Date.now()
-                  }));
-                  window.location.href = 'https://platform.andru-ai.com/login';
+              <button
+                onClick={async () => {
+                  try {
+                    // Get session ID from sessionStorage (set during assessment)
+                    const assessmentSessionId = sessionStorage.getItem('backend_session_id');
+
+                    if (!assessmentSessionId) {
+                      console.error('No session ID found');
+                      // Fallback to old behavior
+                      sessionStorage.setItem('assessmentResults', JSON.stringify({
+                        results,
+                        questionTimings,
+                        generatedContent,
+                        userInfo,
+                        productInfo,
+                        timestamp: Date.now()
+                      }));
+                      window.location.href = 'https://platform.andru-ai.com/login';
+                      return;
+                    }
+
+                    // Generate token from backend
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://andru-assessment-backend.onrender.com/api';
+                    const response = await fetch(`${API_URL}/assessment/generate-token`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ sessionId: assessmentSessionId }),
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to generate token');
+                    }
+
+                    const { token } = await response.json();
+
+                    // Redirect to platform with token
+                    window.location.href = `https://platform.andru-ai.com/claim?token=${token}`;
+                  } catch (error) {
+                    console.error('Error generating token:', error);
+                    // Fallback to old behavior
+                    sessionStorage.setItem('assessmentResults', JSON.stringify({
+                      results,
+                      questionTimings,
+                      generatedContent,
+                      userInfo,
+                      productInfo,
+                      timestamp: Date.now()
+                    }));
+                    window.location.href = 'https://platform.andru-ai.com/login';
+                  }
                 }}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors font-medium"
               >
