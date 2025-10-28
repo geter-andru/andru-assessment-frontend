@@ -2,10 +2,23 @@
 
 // CORE PHASE: Simple landing page with assessment CTA
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { startAssessment } from '../lib/api';
+import { trackEvent, trackPageView, getSessionId } from '../lib/analytics';
 
 export default function Home() {
+  useEffect(() => {
+    // Track homepage view
+    const analyticsSessionId = getSessionId();
+    trackPageView('homepage', {
+      sessionId: analyticsSessionId
+    });
+    trackEvent('homepage_viewed', {
+      sessionId: analyticsSessionId
+    });
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ padding: 'var(--spacing-2xl)' }}>
       <div style={{ maxWidth: 'var(--container-max-width)', margin: '0 auto', textAlign: 'center' }}>
@@ -55,6 +68,13 @@ export default function Home() {
           
           <button
             onClick={async () => {
+              // Track CTA click
+              const analyticsSessionId = getSessionId();
+              trackEvent('cta_clicked', {
+                sessionId: analyticsSessionId,
+                ctaLocation: 'homepage_hero'
+              });
+
               // Generate 12-character alphanumeric session ID
               const generateSessionId = () => {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -64,16 +84,16 @@ export default function Home() {
                 }
                 return result;
               };
-              
+
               const sessionId = generateSessionId();
-              
+
               try {
                 // Create assessment record with session ID
                 const response = await startAssessment({
                   sessionId,
                   startTime: new Date().toISOString()
                 });
-                
+
                 if (response.success) {
                   // Store session ID for assessment page
                   sessionStorage.setItem('assessmentSessionId', sessionId);

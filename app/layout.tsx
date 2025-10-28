@@ -3,6 +3,7 @@ import { Red_Hat_Display } from "next/font/google";
 import "./globals.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AssessmentProvider } from "@/contexts/AssessmentContext";
+import PostHogProvider from "@/components/PostHogProvider";
 
 const redHatDisplay = Red_Hat_Display({
   subsets: ["latin"],
@@ -37,11 +38,13 @@ export default function RootLayout({
         className={`${redHatDisplay.variable} font-red-hat-display antialiased`}
         suppressHydrationWarning={true}
       >
-        <ErrorBoundary>
-          <AssessmentProvider>
-            {children}
-          </AssessmentProvider>
-        </ErrorBoundary>
+        <PostHogProvider>
+          <ErrorBoundary>
+            <AssessmentProvider>
+              {children}
+            </AssessmentProvider>
+          </ErrorBoundary>
+        </PostHogProvider>
       </body>
     </html>
   );

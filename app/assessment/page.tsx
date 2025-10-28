@@ -15,6 +15,7 @@ import EnvironmentalBackground from '@/components/EnvironmentalBackground';
 import AssessmentResults from '@/components/AssessmentResults';
 import ModernCard from '@/components/ui/ModernCard';
 import { AssessmentErrorBoundary } from '@/components/ErrorBoundary';
+import { trackEvent, trackAIInsight, trackConversion, getSessionId } from '@/lib/analytics';
 
 interface UserInfo {
   name: string;
@@ -131,8 +132,31 @@ export default function AssessmentPage() {
       // Add to insights array
       setAiInsights([...aiInsights, result.insight]);
 
+      // Track successful AI insight generation
+      const analyticsSessionId = getSessionId();
+      trackAIInsight(true, batchNumber, analyticsSessionId, {
+        insightChallenge: result.insight.challengeIdentified,
+        insightConfidence: result.insight.confidence,
+        processingTime: result.metadata.processingTime
+      });
+
+      // Track insight displayed
+      trackEvent('ai_insight_displayed', {
+        sessionId: analyticsSessionId,
+        batchNumber,
+        insightChallenge: result.insight.challengeIdentified,
+        insightConfidence: result.insight.confidence
+      });
+
     } catch (error) {
       console.error(`❌ Failed to generate batch ${batchNumber} insight:`, error);
+
+      // Track AI insight failure
+      const analyticsSessionId = getSessionId();
+      trackAIInsight(false, batchNumber, analyticsSessionId, {
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
       // Don't block assessment on insight failure - user can continue
     } finally {
       setIsGeneratingInsight(false);
@@ -148,22 +172,57 @@ export default function AssessmentPage() {
     const newResponses = { ...responses, [question.id]: value };
     setResponses(newResponses);
 
+    const analyticsSessionId = getSessionId();
+    const questionNumber = currentQuestion + 1;
+    const progress = Math.round((questionNumber / assessmentQuestions.length) * 100);
+
+    // Track question answered
+    trackEvent('question_answered', {
+      sessionId: analyticsSessionId,
+      questionNumber,
+      questionId: question.id,
+      questionText: question.text,
+      responseValue: value,
+      responseTime: timeOnQuestion,
+      totalQuestions: assessmentQuestions.length,
+      progress
+    });
+
     // Trigger AI insights at batch boundaries
     // Note: currentQuestion is 0-indexed, so question 4 is index 3
-    const questionNumber = currentQuestion + 1;
-
     if (questionNumber === 4) {
       // 25% complete - Batch 1 (questions 1-4)
       console.log('📊 Batch 1 complete - triggering AI insight generation');
+      trackEvent('ai_insight_requested', {
+        sessionId: analyticsSessionId,
+        batchNumber: 1,
+        progress: 28
+      });
       generateRealtimeInsight(1);
     } else if (questionNumber === 9) {
       // ~64% complete - Batch 2 (questions 5-9)
       console.log('📊 Batch 2 complete - triggering AI insight generation');
+      trackEvent('ai_insight_requested', {
+        sessionId: analyticsSessionId,
+        batchNumber: 2,
+        progress: 64
+      });
       generateRealtimeInsight(2);
     } else if (questionNumber === 14) {
       // 100% complete - Batch 3 (questions 10-14)
       console.log('📊 Batch 3 complete - triggering AI insight generation');
+      trackEvent('ai_insight_requested', {
+        sessionId: analyticsSessionId,
+        batchNumber: 3,
+        progress: 100
+      });
       generateRealtimeInsight(3);
+
+      // Track assessment completion
+      trackConversion('assessment_completed', analyticsSessionId, {
+        totalQuestions: assessmentQuestions.length,
+        overallScore: calculateScore(newResponses).overallScore
+      });
     }
 
     if (isLastQuestion) {
@@ -177,9 +236,10 @@ export default function AssessmentPage() {
   const handleProductSubmit = async (info: ProductInfo) => {
     setProductInfo(info);
     setShowProductInput(false);
-    
+
     // CORE: Use session ID from start assessment
     const existingSessionId = sessionStorage.getItem('assessmentSessionId');
+    const analyticsSessionId = getSessionId();
     if (existingSessionId) {
       setSessionId(existingSessionId);
     } else {
@@ -188,6 +248,13 @@ export default function AssessmentPage() {
       setSessionId(newSessionId);
     }
     setAssessmentStartTime(Date.now());
+
+    // Track assessment start
+    trackEvent('assessment_started', {
+      sessionId: analyticsSessionId,
+      totalQuestions: assessmentQuestions.length,
+      timestamp: new Date().toISOString()
+    });
     
     // ESSENTIAL: Trigger enhanced fallback system for ICP/TBP generation
     try {
@@ -268,11 +335,25 @@ export default function AssessmentPage() {
     setUserInfo(info);
     setShowUserForm(false);
     setShowComprehensiveResults(true);
+
+    // Track user info submission
+    const analyticsSessionId = getSessionId();
+    trackConversion('user_info_submitted', analyticsSessionId, {
+      hasEmail: !!info.email,
+      hasName: !!info.name,
+      hasCompany: !!info.company
+    });
   };
-  
+
   const handleSkipUserInfo = () => {
     setShowUserForm(false);
     setShowComprehensiveResults(true);
+
+    // Track user info skip
+    const analyticsSessionId = getSessionId();
+    trackEvent('user_info_skipped', {
+      sessionId: analyticsSessionId
+    });
   };
   
   const handlePrevious = () => {
