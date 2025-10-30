@@ -2,11 +2,14 @@
 # Next.js 15 deployment configuration with Netlify Adapter
 
 [build]
-  command = "npm run build"
+  # Explicit npm install ensures all dependencies are available during build
+  # Matches working modern-platform configuration
+  command = "npm install --prefer-offline=false && npm run build"
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "22"
+  # Using Node 20 LTS for better Netlify compatibility (was 22)
+  NODE_VERSION = "20"
   # These will be overridden by Netlify environment variables in the dashboard
   # Listed here for documentation purposes
   NEXT_PUBLIC_AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY"
