@@ -6,7 +6,7 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "22"
   # These will be overridden by Netlify environment variables in the dashboard
   # Listed here for documentation purposes
   NEXT_PUBLIC_AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY"
