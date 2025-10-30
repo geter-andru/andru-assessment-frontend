@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // No explicit output mode - let Netlify's OpenNext adapter handle deployment type
+  // Removed 'standalone' (added Sept 30) - caused 19 consecutive build failures
+  // Netlify expects standard Next.js output structure, not standalone's nested structure
   eslint: {
     ignoreDuringBuilds: true,
   },
