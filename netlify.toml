@@ -92,4 +92,5 @@
 # Function configuration
 [functions]
   node_bundler = "esbuild"
-  included_files = ["public/**", ".next/**"]
+  # included_files removed - @netlify/plugin-nextjs handles bundling automatically
+  # Prevents function size bloat (was causing 250 MB limit exceeded)
