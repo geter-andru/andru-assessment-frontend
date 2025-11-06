@@ -1,17 +1,12 @@
 'use client';
 
-// CORE PHASE: Product input collection with ideal customer description
+// Simplified product input - only business model and product description
 
 import { useState } from 'react';
 
 interface ProductInfo {
-  productName: string;
-  productDescription: string;
-  keyFeatures: string;
-  idealCustomerDescription: string; // NEW: User's description of ideal customer
   businessModel: string;
-  customerCount: string;
-  distinguishingFeature: string;
+  productDescription: string;
 }
 
 interface ProductInputFormProps {
@@ -20,36 +15,23 @@ interface ProductInputFormProps {
 
 export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
   const [productInfo, setProductInfo] = useState<ProductInfo>({
-    productName: '',
-    productDescription: '',
-    keyFeatures: '',
-    idealCustomerDescription: '', // NEW field
     businessModel: '',
-    customerCount: '',
-    distinguishingFeature: ''
+    productDescription: ''
   });
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    if (!productInfo.productName.trim()) {
-      newErrors.productName = 'Product name is required';
-    }
-    
+
     if (!productInfo.businessModel.trim()) {
       newErrors.businessModel = 'Business model is required';
     }
-    
+
     if (!productInfo.productDescription.trim()) {
-      newErrors.productDescription = 'Product description is required';
+      newErrors.productDescription = 'Please tell us about your product';
     }
-    
-    if (!productInfo.idealCustomerDescription.trim()) {
-      newErrors.idealCustomerDescription = 'Please describe your ideal customer';
-    }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -98,44 +80,6 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
           </div>
           
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3xl)' }}>
-            {/* Product Name */}
-            <div>
-              <label htmlFor="productName" style={{
-                display: 'block',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: '600',
-                color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-sm)'
-              }}>
-                Product Name *
-              </label>
-              <input
-                type="text"
-                id="productName"
-                value={productInfo.productName}
-                onChange={(e) => handleInputChange('productName', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md) var(--spacing-lg)',
-                  border: `2px solid ${errors.productName ? 'var(--color-error)' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--border-radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  outline: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-                placeholder="e.g., AI Sales Assistant, CRM Platform"
-              />
-              {errors.productName && (
-                <p style={{
-                  color: 'var(--color-error)',
-                  fontSize: 'var(--font-size-sm)',
-                  marginTop: 'var(--spacing-xs)'
-                }}>{errors.productName}</p>
-              )}
-            </div>
-            
             {/* Business Model */}
             <div>
               <label htmlFor="businessModel" style={{
@@ -175,8 +119,8 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
                 }}>{errors.businessModel}</p>
               )}
             </div>
-            
-            {/* Product Description */}
+
+            {/* Product Description - "Tell me about your product" */}
             <div>
               <label htmlFor="productDescription" style={{
                 display: 'block',
@@ -185,7 +129,7 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
                 color: 'var(--color-text-primary)',
                 marginBottom: 'var(--spacing-sm)'
               }}>
-                Product Description *
+                Tell Me About Your Product *
               </label>
               <textarea
                 id="productDescription"
@@ -201,10 +145,10 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
                   color: 'var(--color-text-primary)',
                   outline: 'none',
                   transition: 'all 0.2s ease',
-                  minHeight: '100px',
+                  minHeight: '150px',
                   resize: 'vertical'
                 }}
-                placeholder="Describe what your product does and the problem it solves..."
+                placeholder="Describe what your product does, the problem it solves, who you sell to, and any other relevant details..."
               />
               {errors.productDescription && (
                 <p style={{
@@ -214,86 +158,7 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
                 }}>{errors.productDescription}</p>
               )}
             </div>
-            
-            {/* Key Features */}
-            <div>
-              <label htmlFor="keyFeatures" style={{
-                display: 'block',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: '600',
-                color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-sm)'
-              }}>
-                Key Features (Optional)
-              </label>
-              <textarea
-                id="keyFeatures"
-                value={productInfo.keyFeatures}
-                onChange={(e) => handleInputChange('keyFeatures', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md) var(--spacing-lg)',
-                  border: '2px solid var(--color-border)',
-                  borderRadius: 'var(--border-radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  outline: 'none',
-                  transition: 'all 0.2s ease',
-                  minHeight: '80px',
-                  resize: 'vertical'
-                }}
-                placeholder="List main features or capabilities..."
-              />
-            </div>
-            
-            {/* Ideal Customer Description */}
-            <div>
-              <label htmlFor="idealCustomerDescription" style={{
-                display: 'block',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: '600',
-                color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-sm)'
-              }}>
-                Describe Your Ideal Customer or Target Buyer *
-              </label>
-              <textarea
-                id="idealCustomerDescription"
-                value={productInfo.idealCustomerDescription}
-                onChange={(e) => handleInputChange('idealCustomerDescription', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md) var(--spacing-lg)',
-                  border: `2px solid ${errors.idealCustomerDescription ? 'var(--color-error)' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--border-radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  outline: 'none',
-                  transition: 'all 0.2s ease',
-                  minHeight: '120px',
-                  resize: 'vertical'
-                }}
-                placeholder="Who is your ideal customer? What are their characteristics, pain points, and goals? Be as specific as possible..."
-              />
-              {errors.idealCustomerDescription && (
-                <p style={{
-                  color: 'var(--color-error)',
-                  fontSize: 'var(--font-size-sm)',
-                  marginTop: 'var(--spacing-xs)'
-                }}>{errors.idealCustomerDescription}</p>
-              )}
-              <p style={{
-                color: 'var(--color-text-secondary)',
-                fontSize: 'var(--font-size-xs)',
-                marginTop: 'var(--spacing-xs)',
-                fontStyle: 'italic'
-              }}>
-                💡 We&apos;ll compare your description with AI-generated insights to identify buyer understanding gaps
-              </p>
-            </div>
-            
+
             {/* Submit Button */}
             <button
               type="submit"

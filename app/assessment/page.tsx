@@ -25,13 +25,8 @@ interface UserInfo {
 }
 
 interface ProductInfo {
-  productName: string;
-  productDescription: string;
-  keyFeatures: string;
-  idealCustomerDescription: string;
   businessModel: string;
-  customerCount: string;
-  distinguishingFeature: string;
+  productDescription: string;
 }
 
 interface GeneratedContent {
@@ -41,7 +36,7 @@ interface GeneratedContent {
 }
 
 export default function AssessmentPage() {
-  const [showProductInput, setShowProductInput] = useState(true); // CORE: Start with product input
+  const [showProductInput, setShowProductInput] = useState(true); // Start with simplified product input
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<string, number>>({});
@@ -101,13 +96,13 @@ export default function AssessmentPage() {
       // Get responses for current batch
       const batchResponses = getBatchResponses(batchNumber, responses);
 
-      // Prepare request data
+      // Prepare request data with simplified product info
       const requestData = {
         sessionId,
         responses: batchResponses,
         userInfo: {
-          company: productInfo.productName,  // Using product name as company
-          productName: productInfo.productName,
+          company: userInfo?.company || 'B2B Company',
+          productName: productInfo.productDescription.split('.')[0].substring(0, 50) || 'Product', // Use first sentence as product name
           businessModel: productInfo.businessModel
         },
         previousInsights: aiInsights
@@ -253,82 +248,15 @@ export default function AssessmentPage() {
     trackEvent('assessment_started', {
       sessionId: analyticsSessionId,
       totalQuestions: assessmentQuestions.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      businessModel: info.businessModel
     });
-    
-    // ESSENTIAL: Trigger enhanced fallback system for ICP/TBP generation
-    try {
-      console.log('🚀 Starting enhanced fallback generation for assessment');
-      console.log('📝 Product Info:', {
-        productName: info.productName,
-        businessModel: info.businessModel,
-        productDescription: info.productDescription.substring(0, 100) + '...',
-        keyFeatures: info.keyFeatures.substring(0, 100) + '...',
-        idealCustomerDescription: info.idealCustomerDescription.substring(0, 100) + '...'
-      });
-      
-      // Note: Webhook service is handled by backend
-      console.log('📦 Webhook service handled by backend');
-      console.log('✅ Assessment generation initiated');
-      
-      // Start generation with session tracking
-      console.log('🎯 Starting generation with session:', sessionId);
-      
-      // Trigger enhanced fallback system with web research
-      console.log('🔬 Triggering enhanced fallback system...');
-      // Note: Enhanced resources generation handled by backend
-      const enhancedResources = {
-        productName: info.productName,
-        productDescription: info.productDescription,
-        businessType: info.businessModel,
-        keyFeatures: info.keyFeatures,
-        customerId: 'ASSESS_USER',
-        icp_analysis: { content: '' },
-        buyer_personas: { content: '' }
-      };
-      
-      console.log('📊 Enhanced resources generated:', {
-        hasICP: !!enhancedResources.icp_analysis,
-        hasTBP: !!enhancedResources.buyer_personas,
-        icpLength: enhancedResources.icp_analysis?.content?.length || 0,
-        tbpLength: enhancedResources.buyer_personas?.content?.length || 0
-      });
-      
-      // Store generated content for gap analysis and submission
-      const generatedIcp = enhancedResources.icp_analysis?.content || '';
-      const buyerGap = calculateBuyerGap(info.idealCustomerDescription, generatedIcp);
-      
-      setGeneratedContent({
-        icpGenerated: generatedIcp,
-        tbpGenerated: enhancedResources.buyer_personas?.content || '',
-        buyerGap: buyerGap
-      });
-      
-      console.log('✅ Enhanced fallback generation completed successfully');
-      console.log('🎯 Buyer understanding gap calculated:', buyerGap + '%');
-    } catch (error) {
-      console.error('⚠️ Fallback generation failed:', error);
-      console.error('📍 Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack?.substring(0, 200) : undefined
-      });
-      // Continue with assessment even if generation fails
-    }
-  };
-  
-  // Calculate buyer understanding gap percentage
-  const calculateBuyerGap = (userDescription: string, aiGenerated: string): number => {
-    const userWords = userDescription.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    const aiWords = aiGenerated.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    
-    const overlap = userWords.filter(word => 
-      aiWords.some(aiWord => aiWord.includes(word) || word.includes(aiWord))
-    );
-    
-    const overlapRatio = overlap.length / Math.max(aiWords.length, userWords.length);
-    const gap = Math.round((1 - overlapRatio) * 100);
-    
-    return Math.max(15, Math.min(75, gap)); // Realistic gap between 15-75%
+
+    console.log('✅ Assessment started with simplified product info');
+    console.log('📝 Product Info:', {
+      businessModel: info.businessModel,
+      productDescription: info.productDescription.substring(0, 100) + '...'
+    });
   };
 
   const handleUserInfoSubmit = (info: UserInfo) => {
