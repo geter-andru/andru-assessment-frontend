@@ -21,7 +21,7 @@ interface AssessmentResultsProps {
     overallScore: number;
     buyerScore: number;
     techScore: number;
-    qualification: string;
+    qualification: 'Qualified' | 'Promising' | 'Developing' | 'Early Stage';
   };
   questionTimings: Record<string, number>;
   generatedContent?: {
@@ -36,13 +36,13 @@ interface AssessmentResultsProps {
     role?: string;
   };
   productInfo?: {
-    productName: string;
+    productName?: string;
     productDescription: string;
-    keyFeatures: string;
-    idealCustomerDescription: string;
+    keyFeatures?: string;
+    idealCustomerDescription?: string;
     businessModel: string;
-    customerCount: string;
-    distinguishingFeature: string;
+    customerCount?: string;
+    distinguishingFeature?: string;
   };
   aiInsights?: AssessmentInsight[];
 }
@@ -757,19 +757,19 @@ export default function AssessmentResults({ results, questionTimings, generatedC
               const waitlistData = {
                 email: userInfo?.email || '',
                 productName: productInfo?.productName || userInfo?.company || '',
-                score: results.overallScore,
-                challenges: challenges.length,
+                score: results.overallScore.toString(),
+                challenges: challenges.length.toString(),
                 riskLevel: results.qualification,
                 focusArea: challenges[0]?.name || '',
                 revenueOpportunity: challenges[0]?.revenueImpact?.match(/\d+[\w%]+/)?.[0] || '',
                 businessModel: productInfo?.businessModel || '',
                 customerCount: productInfo?.customerCount || '',
-                qualified: results.qualification === 'Qualified',
+                qualified: (results.qualification === 'Qualified').toString(),
                 sessionId: Date.now().toString()
               };
-              
+
               // Build URL with assessment data
-              const params = new URLSearchParams(waitlistData as Record<string, string>);
+              const params = new URLSearchParams(waitlistData);
               window.location.href = `/waitlist?${params.toString()}`;
             }}
             className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-black font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:transform hover:-translate-y-1 group"

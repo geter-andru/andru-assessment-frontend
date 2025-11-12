@@ -30,13 +30,13 @@ export interface AssessmentSubmitRequest {
     role?: string;
   };
   productInfo?: {
-    productName: string;
+    productName?: string;
     productDescription: string;
-    keyFeatures: string;
-    idealCustomerDescription: string;
+    keyFeatures?: string;
+    idealCustomerDescription?: string;
     businessModel: string;
-    customerCount: string;
-    distinguishingFeature: string;
+    customerCount?: string;
+    distinguishingFeature?: string;
   };
   questionTimings?: Record<string, number>;
   generatedContent?: {

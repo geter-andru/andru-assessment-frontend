@@ -206,7 +206,7 @@ export default function SmartInsights({
       
       // Pattern insight at 75% - no scores revealed
       return {
-        type: 'progress',
+        type: 'pattern',
         title: 'Assessment Nearing Completion',
         message: `You're 75% complete. The final questions focus on advanced revenue execution skills that separate successful founders from the rest.`,
         severity: 'info'

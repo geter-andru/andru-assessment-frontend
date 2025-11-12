@@ -13,10 +13,9 @@ interface UserInfo {
 
 interface UserInfoFormProps {
   onSubmit: (userInfo: UserInfo) => void;
-  onSkip: () => void;
 }
 
-export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
+export default function UserInfoForm({ onSubmit }: UserInfoFormProps) {
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: '',
     email: '',
@@ -28,21 +27,14 @@ export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
   
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    if (!userInfo.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    
+
+    // Only email is required
     if (!userInfo.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
-    if (!userInfo.company.trim()) {
-      newErrors.company = 'Company is required';
-    }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -80,62 +72,18 @@ export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
               color: 'var(--color-text-primary)',
               marginBottom: 'var(--spacing-md)'
             }}>
-              Almost There! 
+              Get Your Results
             </h1>
             <p style={{
               fontSize: 'var(--font-size-lg)',
               color: 'var(--color-text-secondary)'
             }}>
-              Help us personalize your results and connect you to the right tools.
+              Enter your email to receive your personalized buyer intelligence report.
             </p>
           </div>
           
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3xl)' }}>
-            <div>
-              <label htmlFor="name" style={{
-                display: 'block',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: '600',
-                color: 'var(--color-text-primary)',
-                marginBottom: 'var(--spacing-sm)'
-              }}>
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={userInfo.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md) var(--spacing-lg)',
-                  border: `2px solid ${errors.name ? 'var(--color-error)' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--border-radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  outline: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-                placeholder="Enter your full name"
-                onFocus={(e) => {
-                  (e.target as HTMLInputElement).style.borderColor = 'var(--color-primary)';
-                  (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--color-primary-alpha)';
-                }}
-                onBlur={(e) => {
-                  (e.target as HTMLInputElement).style.borderColor = errors.name ? 'var(--color-error)' : 'var(--color-border)';
-                  (e.target as HTMLInputElement).style.boxShadow = 'none';
-                }}
-              />
-              {errors.name && (
-                <p style={{
-                  color: 'var(--color-error)',
-                  fontSize: 'var(--font-size-sm)',
-                  marginTop: 'var(--spacing-xs)'
-                }}>{errors.name}</p>
-              )}
-            </div>
-            
+            {/* Email First - It's Required */}
             <div>
               <label htmlFor="email" style={{
                 display: 'block',
@@ -180,7 +128,53 @@ export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
                 }}>{errors.email}</p>
               )}
             </div>
-            
+
+            {/* Optional Fields */}
+            <div>
+              <label htmlFor="name" style={{
+                display: 'block',
+                fontSize: 'var(--font-size-sm)',
+                fontWeight: '600',
+                color: 'var(--color-text-primary)',
+                marginBottom: 'var(--spacing-sm)'
+              }}>
+                Full Name (Optional)
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={userInfo.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: 'var(--spacing-md) var(--spacing-lg)',
+                  border: `2px solid ${errors.name ? 'var(--color-error)' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--border-radius-md)',
+                  fontSize: 'var(--font-size-base)',
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text-primary)',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                placeholder="Enter your full name"
+                onFocus={(e) => {
+                  (e.target as HTMLInputElement).style.borderColor = 'var(--color-primary)';
+                  (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--color-primary-alpha)';
+                }}
+                onBlur={(e) => {
+                  (e.target as HTMLInputElement).style.borderColor = errors.name ? 'var(--color-error)' : 'var(--color-border)';
+                  (e.target as HTMLInputElement).style.boxShadow = 'none';
+                }}
+              />
+              {errors.name && (
+                <p style={{
+                  color: 'var(--color-error)',
+                  fontSize: 'var(--font-size-sm)',
+                  marginTop: 'var(--spacing-xs)'
+                }}>{errors.name}</p>
+              )}
+            </div>
+
             <div>
               <label htmlFor="company" style={{
                 display: 'block',
@@ -189,7 +183,7 @@ export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
                 color: 'var(--color-text-primary)',
                 marginBottom: 'var(--spacing-sm)'
               }}>
-                Company Name *
+                Company Name (Optional)
               </label>
               <input
                 type="text"
@@ -264,54 +258,29 @@ export default function UserInfoForm({ onSubmit, onSkip }: UserInfoFormProps) {
               />
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'white',
-                  padding: 'var(--spacing-lg) var(--spacing-xl)',
-                  borderRadius: 'var(--border-radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = 'var(--color-primary-dark)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = 'var(--color-primary)';
-                }}
-              >
-                Get My Personalized Results →
-              </button>
-              
-              <button
-                type="button"
-                onClick={onSkip}
-                style={{
-                  width: '100%',
-                  color: 'var(--color-text-secondary)',
-                  padding: 'var(--spacing-sm) 0',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 'var(--font-size-sm)',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.color = 'var(--color-text-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.color = 'var(--color-text-secondary)';
-                }}
-              >
-                Skip for now - just show results
-              </button>
-            </div>
+            <button
+              type="submit"
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--color-primary)',
+                color: 'white',
+                padding: 'var(--spacing-lg) var(--spacing-xl)',
+                borderRadius: 'var(--border-radius-md)',
+                fontSize: 'var(--font-size-base)',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = 'var(--color-primary-dark)';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = 'var(--color-primary)';
+              }}
+            >
+              Get My Personalized Results →
+            </button>
           </form>
           
           <div style={{ 

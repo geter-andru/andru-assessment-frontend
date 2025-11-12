@@ -13,9 +13,9 @@ interface WelcomeData {
   qualification: string;
   overallScore: number;
   topChallenge: string;
-  icpContent: any;
-  tbpContent: any;
-  accessToken: string;
+  icpContent: string | null;
+  tbpContent: string | null;
+  accessToken: string | null;
 }
 
 function WelcomePageContent() {
@@ -65,7 +65,7 @@ function WelcomePageContent() {
           window.location.href = syncResult.redirectUrl;
         } else {
           // Fallback to direct redirect if sync fails
-          console.warn('Sync failed, using fallback redirect:', syncResult.error);
+          console.warn('Sync failed, using fallback redirect');
           window.location.href = `/redirect?sessionId=${welcomeData.sessionId}&userId=${welcomeData.sessionId}`;
         }
       } catch (error) {

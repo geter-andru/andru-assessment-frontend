@@ -422,12 +422,10 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
 // Widget factory for creating specific widget types
 export const createWidget = (
   type: WidgetType,
-  config: Omit<WidgetConfig, 'type'>,
-  data?: any
+  config: Omit<WidgetConfig, 'type'>
 ): WidgetConfig => ({
   ...config,
-  type,
-  data
+  type
 });
 
 // Utility functions for widget management

@@ -273,17 +273,6 @@ export default function AssessmentPage() {
     });
   };
 
-  const handleSkipUserInfo = () => {
-    setShowUserForm(false);
-    setShowComprehensiveResults(true);
-
-    // Track user info skip
-    const analyticsSessionId = getSessionId();
-    trackEvent('user_info_skipped', {
-      sessionId: analyticsSessionId
-    });
-  };
-  
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
@@ -319,7 +308,6 @@ export default function AssessmentPage() {
     return (
       <UserInfoForm
         onSubmit={handleUserInfoSubmit}
-        onSkip={handleSkipUserInfo}
       />
     );
   }

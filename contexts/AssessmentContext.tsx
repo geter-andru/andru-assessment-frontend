@@ -47,13 +47,13 @@ export interface AssessmentData {
     role?: string;
   };
   productInfo?: {
-    productName: string;
+    productName?: string;
     productDescription: string;
-    keyFeatures: string;
-    idealCustomerDescription: string;
+    keyFeatures?: string;
+    idealCustomerDescription?: string;
     businessModel: string;
-    customerCount: string;
-    distinguishingFeature: string;
+    customerCount?: string;
+    distinguishingFeature?: string;
   };
 }
 
