@@ -232,25 +232,32 @@ export default function AssessmentPage() {
     setProductInfo(info);
     setShowProductInput(false);
 
-    // CORE: Use session ID from start assessment
-    const existingSessionId = sessionStorage.getItem('assessmentSessionId');
-    const analyticsSessionId = getSessionId();
-    if (existingSessionId) {
-      setSessionId(existingSessionId);
-    } else {
-      // Fallback if no session ID (shouldn't happen)
-      const newSessionId = `assess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setSessionId(newSessionId);
-    }
+    // Generate session ID
+    const newSessionId = `assess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
     setAssessmentStartTime(Date.now());
 
-    // Track assessment start
+    // Track analytics
+    const analyticsSessionId = getSessionId();
     trackEvent('assessment_started', {
       sessionId: analyticsSessionId,
       totalQuestions: assessmentQuestions.length,
       timestamp: new Date().toISOString(),
       businessModel: info.businessModel
     });
+
+    // Call backend to create assessment_sessions row in Supabase (triggers "started" notification)
+    try {
+      console.log('📤 Notifying backend of assessment start...');
+      await startAssessment({
+        sessionId: newSessionId,
+        startTime: new Date().toISOString()
+      });
+      console.log('✅ Assessment start notification sent');
+    } catch (error) {
+      console.error('⚠️ Failed to notify backend of assessment start (non-fatal):', error);
+      // Non-fatal: assessment can continue even if backend notification fails
+    }
 
     console.log('✅ Assessment started with simplified product info');
     console.log('📝 Product Info:', {
