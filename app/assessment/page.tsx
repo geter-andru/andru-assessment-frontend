@@ -234,9 +234,13 @@ export default function AssessmentPage() {
       console.log('📤 Notifying backend of assessment start...');
       await startAssessment({
         sessionId: newSessionId,
-        startTime: new Date().toISOString()
+        startTime: new Date().toISOString(),
+        productInfo: {
+          businessModel: info.businessModel,
+          productDescription: info.productDescription
+        }
       });
-      console.log('✅ Assessment start notification sent');
+      console.log('✅ Assessment start notification sent with product details');
     } catch (error) {
       console.error('⚠️ Failed to notify backend of assessment start (non-fatal):', error);
       // Non-fatal: assessment can continue even if backend notification fails
