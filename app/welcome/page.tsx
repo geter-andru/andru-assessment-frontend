@@ -216,7 +216,7 @@ function WelcomePageContent() {
               
               {welcomeData.tbpContent && (
                 <div className="bg-gray-800/50 rounded-lg p-4 text-left">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Enhanced Buyer Understanding:</h4>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Enhanced Customer Intelligence:</h4>
                   <p className="text-gray-300 text-sm">
                     {typeof welcomeData.tbpContent === 'string' 
                       ? welcomeData.tbpContent.substring(0, 150) + '...'

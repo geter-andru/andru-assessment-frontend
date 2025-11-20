@@ -13,7 +13,7 @@ interface AnswerExplanationProps {
 }
 
 const explanations: Record<string, Record<number, string>> = {
-  // Buyer Understanding Questions
+  // Customer Intelligence Questions
   q1: {
     5: "Excellent! Clearly understanding customer pain points is the foundation of effective selling. You can speak their language and address real challenges.",
     4: "Good understanding! You have a solid grasp of customer problems, which gives you credibility in sales conversations.",

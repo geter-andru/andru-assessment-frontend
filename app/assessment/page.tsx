@@ -360,7 +360,7 @@ export default function AssessmentPage() {
             marginBottom: 'var(--spacing-4xl)' 
           }}>
             <div className="glass-card" style={{ padding: 'var(--spacing-2xl)' }}>
-              <div className="score-label">Buyer Understanding</div>
+              <div className="score-label">Customer Intelligence</div>
               <div style={{ 
                 fontSize: 'var(--font-size-3xl)', 
                 fontWeight: '700',

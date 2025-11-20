@@ -8,7 +8,7 @@ export interface Question {
 }
 
 export const assessmentQuestions: Question[] = [
-  // Buyer Understanding Questions (60% weight)
+  // Customer Intelligence Questions (60% weight)
   {
     id: 'q1',
     category: 'buyer',
@@ -52,7 +52,7 @@ export const assessmentQuestions: Question[] = [
     weight: 8.57
   },
   
-  // Technical Translation Questions (40% weight)
+  // Value Communication Questions (40% weight)
   {
     id: 'q8',
     category: 'tech',

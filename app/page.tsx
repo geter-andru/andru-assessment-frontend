@@ -50,11 +50,11 @@ export default function Home() {
           }}>
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <span style={{ color: 'var(--color-accent-success)', marginRight: 'var(--spacing-sm)' }}>✓</span>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Buyer Understanding Score</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Customer Intelligence Score</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <span style={{ color: 'var(--color-accent-success)', marginRight: 'var(--spacing-sm)' }}>✓</span>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Tech Translation Score</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Value Communication Score</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <span style={{ color: 'var(--color-accent-success)', marginRight: 'var(--spacing-sm)' }}>✓</span>

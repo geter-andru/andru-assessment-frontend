@@ -158,7 +158,7 @@ export default function ScoreAnimation({
         className="grid grid-cols-2 gap-8"
         variants={cardVariants}
       >
-        {/* Buyer Understanding */}
+        {/* Customer Intelligence */}
         <motion.div 
           className="text-center group"
           variants={scoreVariants}
@@ -202,7 +202,7 @@ export default function ScoreAnimation({
           </motion.div>
         </motion.div>
         
-        {/* Tech Translation */}
+        {/* Value Communication */}
         <motion.div 
           className="text-center group"
           variants={scoreVariants}

@@ -59,8 +59,8 @@ Level: ${level}
       headers: ['Metric', 'Score', 'Level'],
       rows: [
         ['Overall', `${results.overallScore}%`, ExportEngineService.getProfessionalLevel(results.overallScore)],
-        ['Buyer Understanding', `${results.buyerScore}%`, ExportEngineService.getProfessionalLevel(results.buyerScore)],
-        ['Tech Communication', `${results.techScore}%`, ExportEngineService.getProfessionalLevel(results.techScore)]
+        ['Customer Intelligence', `${results.buyerScore}%`, ExportEngineService.getProfessionalLevel(results.buyerScore)],
+        ['Value Communication', `${results.techScore}%`, ExportEngineService.getProfessionalLevel(results.techScore)]
       ]
     };
   },
