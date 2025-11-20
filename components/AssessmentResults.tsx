@@ -753,24 +753,8 @@ export default function AssessmentResults({ results, questionTimings, generatedC
         <div className="fixed bottom-8 right-8 z-50">
           <button
             onClick={() => {
-              // Prepare assessment data for waitlist
-              const waitlistData = {
-                email: userInfo?.email || '',
-                productName: productInfo?.productName || userInfo?.company || '',
-                score: results.overallScore.toString(),
-                challenges: challenges.length.toString(),
-                riskLevel: results.qualification,
-                focusArea: challenges[0]?.name || '',
-                revenueOpportunity: challenges[0]?.revenueImpact?.match(/\d+[\w%]+/)?.[0] || '',
-                businessModel: productInfo?.businessModel || '',
-                customerCount: productInfo?.customerCount || '',
-                qualified: (results.qualification === 'Qualified').toString(),
-                sessionId: Date.now().toString()
-              };
-
-              // Build URL with assessment data
-              const params = new URLSearchParams(waitlistData);
-              window.location.href = `/waitlist?${params.toString()}`;
+              // Redirect to platform pricing page
+              window.location.href = 'https://platform.andru-ai.com/pricing';
             }}
             className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-black font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 hover:transform hover:-translate-y-1 group"
           >
