@@ -68,11 +68,11 @@ export default function AssessmentPage() {
     let start: number, end: number;
 
     if (batchNumber === 1) {
-      start = 0; end = 4;  // Questions 1-4
+      start = 0; end = 7;  // Questions 1-7 (50% of assessment)
     } else if (batchNumber === 2) {
-      start = 4; end = 9;  // Questions 5-9
+      start = 4; end = 9;  // Questions 5-9 (deprecated)
     } else {
-      start = 9; end = 14; // Questions 10-14
+      start = 9; end = 14; // Questions 10-14 (deprecated)
     }
 
     return questions.slice(start, end).map(q => ({
@@ -183,37 +183,20 @@ export default function AssessmentPage() {
       progress
     });
 
-    // Trigger AI insights at batch boundaries
-    // Note: currentQuestion is 0-indexed, so question 4 is index 3
-    if (questionNumber === 4) {
-      // 25% complete - Batch 1 (questions 1-4)
-      console.log('📊 Batch 1 complete - triggering AI insight generation');
+    // Trigger AI insight at halfway point (question 7)
+    if (questionNumber === 7) {
+      // 50% complete - Single insight generation (questions 1-7)
+      console.log('📊 Halfway point reached - triggering AI insight generation');
       trackEvent('ai_insight_requested', {
         sessionId: analyticsSessionId,
         batchNumber: 1,
-        progress: 28
+        progress: 50
       });
       generateRealtimeInsight(1);
-    } else if (questionNumber === 9) {
-      // ~64% complete - Batch 2 (questions 5-9)
-      console.log('📊 Batch 2 complete - triggering AI insight generation');
-      trackEvent('ai_insight_requested', {
-        sessionId: analyticsSessionId,
-        batchNumber: 2,
-        progress: 64
-      });
-      generateRealtimeInsight(2);
-    } else if (questionNumber === 14) {
-      // 100% complete - Batch 3 (questions 10-14)
-      console.log('📊 Batch 3 complete - triggering AI insight generation');
-      trackEvent('ai_insight_requested', {
-        sessionId: analyticsSessionId,
-        batchNumber: 3,
-        progress: 100
-      });
-      generateRealtimeInsight(3);
+    }
 
-      // Track assessment completion
+    // Track assessment completion at the end
+    if (questionNumber === 14) {
       trackConversion('assessment_completed', analyticsSessionId, {
         totalQuestions: assessmentQuestions.length,
         overallScore: calculateScore(newResponses).overallScore
