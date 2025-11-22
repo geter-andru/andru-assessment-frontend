@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import EnterpriseScoreChart from './EnterpriseScoreChart';
 import ModernCard from './ui/ModernCard';
 import { AssessmentErrorBoundary } from './ErrorBoundary';
+import SocialShareCard from './SocialShareCard';
 import { useAssessment } from '@/contexts/AssessmentContext';
 import {
   WidgetContainer,
@@ -748,6 +749,23 @@ export default function AssessmentResults({ results, questionTimings, generatedC
             </ModernCard>
           </motion.div>
         )}
+
+        {/* Social Sharing Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-12"
+        >
+          <SocialShareCard
+            score={results.overallScore}
+            qualification={results.qualification as 'Qualified' | 'Promising' | 'Developing' | 'Needs Work'}
+            buyerScore={results.buyerScore}
+            techScore={results.techScore}
+            userName={userInfo?.name}
+            companyName={userInfo?.company || productInfo?.productName}
+          />
+        </motion.div>
 
         {/* Get Early Access CTA */}
         <div className="fixed bottom-8 right-8 z-50">

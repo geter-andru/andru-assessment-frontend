@@ -3,6 +3,7 @@
 // Simplified product input - only business model and product description
 
 import { useState } from 'react';
+import StepIndicator from '@/components/StepIndicator';
 
 interface ProductInfo {
   businessModel: string;
@@ -61,6 +62,9 @@ export default function ProductInputForm({ onSubmit }: ProductInputFormProps) {
       justifyContent: 'center'
     }}>
       <div style={{ maxWidth: '700px', width: '100%' }}>
+        {/* 5-Step Journey Indicator */}
+        <StepIndicator currentStep="product" />
+
         <div className="glass-card" style={{ padding: 'var(--spacing-4xl)' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-4xl)' }}>
             <h1 style={{

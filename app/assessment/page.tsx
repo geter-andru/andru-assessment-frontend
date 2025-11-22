@@ -8,7 +8,12 @@ import { detectIndustry } from '@/lib/industry-data';
 import SmartInsights from '@/components/SmartInsights';
 import UserInfoForm from '@/components/UserInfoForm';
 import ProductInputForm from '@/components/ProductInputForm';
-import { submitAssessment, generateBatch1Insight, generateBatch2Insight, generateBatch3Insight, type AssessmentInsight } from '@/lib/api';
+import { submitAssessment, startAssessment, generateBatch1Insight, generateBatch2Insight, generateBatch3Insight, type AssessmentInsight } from '@/lib/api';
+import LoadingScreen from '@/components/LoadingScreen';
+import StepIndicator, { type AssessmentStep } from '@/components/StepIndicator';
+import CategoryBadge from '@/components/CategoryBadge';
+import SliderInput from '@/components/SliderInput';
+import ExitIntentModal from '@/components/ExitIntentModal';
 import AnswerExplanation from '@/components/AnswerExplanation';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import EnvironmentalBackground from '@/components/EnvironmentalBackground';
@@ -36,6 +41,7 @@ interface GeneratedContent {
 }
 
 export default function AssessmentPage() {
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true); // Show loading animation first
   const [showProductInput, setShowProductInput] = useState(true); // Start with simplified product input
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -288,6 +294,15 @@ export default function AssessmentPage() {
     );
   }
 
+  // Show loading screen first (premium loading animation)
+  if (showLoadingScreen) {
+    return (
+      <LoadingScreen
+        onLoadingComplete={() => setShowLoadingScreen(false)}
+      />
+    );
+  }
+
   // CORE: Show product input first
   if (showProductInput) {
     return (
@@ -536,6 +551,22 @@ export default function AssessmentPage() {
         aiInsights={aiInsights}
         isGeneratingInsight={isGeneratingInsight}
       />
+
+      {/* Exit Intent Recovery Modal */}
+      <ExitIntentModal
+        answeredQuestions={answeredQuestions}
+        totalQuestions={assessmentQuestions.length}
+        onContinue={() => {/* Modal handles closing itself */}}
+        enabled={answeredQuestions > 0 && !showUserForm && !showComprehensiveResults}
+      />
+
+      {/* 5-Step Journey Indicator */}
+      <div style={{ maxWidth: 'var(--container-max-width)', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <StepIndicator
+          currentStep="assessment"
+          assessmentProgress={answeredQuestions}
+        />
+      </div>
       
       <div style={{ 
         maxWidth: 'var(--content-max-width)', 
@@ -570,6 +601,8 @@ export default function AssessmentPage() {
               marginRight: 'var(--spacing-md)' 
             }}>{industryData.icon}</div>
             <div style={{ flex: 1 }}>
+              {/* Category Badge - shows BUYER UNDERSTANDING or TECH-TO-VALUE */}
+              <CategoryBadge category={question.category} />
               <h2 className="question-text">{question.text}</h2>
               {industryData.examples[question.id] && (
                 <div style={{
@@ -594,8 +627,30 @@ export default function AssessmentPage() {
             </div>
           </div>
           
-          {/* Rating scale */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+          {/* Interactive Slider Input */}
+          <SliderInput
+            questionId={question.id}
+            value={responses[question.id]}
+            onChange={handleResponse}
+          />
+
+          {/* Rating scale buttons (preserved as alternative/fallback) */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--spacing-md)',
+            marginTop: 'var(--spacing-lg)',
+            paddingTop: 'var(--spacing-lg)',
+            borderTop: '1px solid var(--glass-border)'
+          }}>
+            <span style={{
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--color-text-muted)',
+              textAlign: 'center',
+              marginBottom: 'var(--spacing-xs)'
+            }}>
+              Or select directly:
+            </span>
             {[4, 3, 2, 1].map((value) => (
               <button
                 key={value}

@@ -3,6 +3,7 @@
 // ESSENTIAL PHASE: User info collection for personalization
 
 import { useState } from 'react';
+import StepIndicator from '@/components/StepIndicator';
 
 interface UserInfo {
   name: string;
@@ -64,6 +65,9 @@ export default function UserInfoForm({ onSubmit }: UserInfoFormProps) {
       justifyContent: 'center'
     }}>
       <div style={{ maxWidth: '600px', width: '100%' }}>
+        {/* 5-Step Journey Indicator */}
+        <StepIndicator currentStep="user-info" />
+
         <div className="glass-card" style={{ padding: 'var(--spacing-4xl)' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-4xl)' }}>
             <h1 style={{
